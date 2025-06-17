@@ -9,6 +9,10 @@ import (
 	"designModeForGo/decorator"
 	"designModeForGo/facade"
 	"designModeForGo/factory"
+	"designModeForGo/iterator"
+	"designModeForGo/medium"
+	"designModeForGo/memento"
+	"designModeForGo/observer"
 	"designModeForGo/prototype"
 	"designModeForGo/proxy"
 	"designModeForGo/singleton"
@@ -172,4 +176,64 @@ func main() {
 		Command: offCommand,
 	}
 	onButton.Press()
+
+	//	迭代器模式
+	user1 := &iterator.User{
+		Name: "a",
+		Age:  30,
+	}
+	user2 := &iterator.User{
+		Name: "b",
+		Age:  20,
+	}
+	userCollection := &iterator.UserCollection{
+		Users: []*iterator.User{user1, user2},
+	}
+	createIterator := userCollection.CreateIterator()
+	for createIterator.HasNext() {
+		user := createIterator.GetNext()
+		fmt.Printf("User is %+v\n", user)
+	}
+
+	// 中介者模式
+	stationManager := medium.NewStationManager()
+	passengerTrain := &medium.PassengerTrain{
+		Mediator: stationManager,
+	}
+	freightTrain := &medium.FreightTrain{
+		Mediator: stationManager,
+	}
+	passengerTrain.Arrive()
+	freightTrain.Arrive()
+	passengerTrain.Depart()
+
+	// 备忘录模式
+	caretaker := &memento.CareTaker{
+		MementoArray: make([]*memento.Memento, 0),
+	}
+	originator := &memento.Originator{State: "A"}
+	fmt.Printf("Originator Current State: %s\n", originator.GetState())
+	caretaker.AddMemento(originator.CreateMemento())
+
+	originator.SetState("B")
+	fmt.Printf("Originator Current State: %s\n", originator.GetState())
+	caretaker.AddMemento(originator.CreateMemento())
+
+	originator.SetState("C")
+	fmt.Printf("Originator Current State: %s\n", originator.GetState())
+	caretaker.AddMemento(originator.CreateMemento())
+
+	originator.RestoreMemento(caretaker.GetMemento(1))
+	fmt.Printf("Restored to State: %s\n", originator.GetState())
+
+	originator.RestoreMemento(caretaker.GetMemento(2))
+	fmt.Printf("Restored to State: %s\n", originator.GetState())
+
+	// 观察者模式
+	shirtItem := observer.NewItem("Nike Shirt")
+	observeFirst := &observer.Customer{Id: "abc@email.com"}
+	observerSecond := &observer.Customer{Id: "xyz@gmail.com"}
+	shirtItem.Register(observeFirst)
+	shirtItem.Register(observerSecond)
+	shirtItem.UpdateAvailability()
 }
