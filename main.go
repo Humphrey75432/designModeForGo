@@ -1,6 +1,7 @@
 package main
 
 import (
+	"designModeForGo/abstractFactory"
 	"designModeForGo/adapter"
 	"designModeForGo/bridge"
 	"designModeForGo/chain"
@@ -16,6 +17,10 @@ import (
 	"designModeForGo/prototype"
 	"designModeForGo/proxy"
 	"designModeForGo/singleton"
+	"designModeForGo/states"
+	"designModeForGo/strategy"
+	"designModeForGo/template"
+	"designModeForGo/vistors"
 	"fmt"
 	"log"
 )
@@ -236,4 +241,103 @@ func main() {
 	shirtItem.Register(observeFirst)
 	shirtItem.Register(observerSecond)
 	shirtItem.UpdateAvailability()
+
+	// 状态模式
+	vendingMachine := states.NewVendingMachine(1, 10)
+	err = vendingMachine.RequestItem()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	err = vendingMachine.InsertMoney(10)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	err = vendingMachine.DispenseItem()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	fmt.Println()
+	err = vendingMachine.AddItem(2)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	fmt.Println()
+	err = vendingMachine.RequestItem()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	err = vendingMachine.InsertMoney(10)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	err = vendingMachine.DispenseItem()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	// 策略模式
+	lfu := &strategy.Lfu{}
+	cache := strategy.InitCache(lfu)
+	cache.Add("a", "1")
+	cache.Add("b", "2")
+	cache.Add("c", "3")
+	lru := &strategy.Lru{}
+	cache.SetEvictionAlgo(lru)
+	cache.Add("d", "4")
+	fifo := &strategy.Fifo{}
+	cache.SetEvictionAlgo(fifo)
+	cache.Add("e", "5")
+
+	// 模板方法
+	smsOTP := &template.Sms{}
+	o := template.Otp{IOtp: smsOTP}
+	o.GenAndSendOTP(4)
+	fmt.Println("")
+	emailOTP := &template.Email{}
+	o = template.Otp{IOtp: emailOTP}
+	o.GenAndSendOTP(4)
+
+	// 访问者模式
+	square := &vistors.Square{Side: 2}
+	circle := &vistors.Circle{Radius: 3}
+	rectangle := &vistors.Rectangle{L: 2, B: 3}
+	areaCalculator := &vistors.AreaCalculator{}
+	square.Accept(areaCalculator)
+	circle.Accept(areaCalculator)
+	rectangle.Accept(areaCalculator)
+	fmt.Println("")
+	middleCoordinates := &vistors.MiddleCoordinates{}
+	square.Accept(middleCoordinates)
+	circle.Accept(middleCoordinates)
+	rectangle.Accept(middleCoordinates)
+
+	// 抽象工厂
+	adidasFactory, _ := abstractFactory.GetSportsFactory("adidas")
+	nikeFactory, _ := abstractFactory.GetSportsFactory("nike")
+
+	nikeShoe := nikeFactory.MakeShoe()
+	nikeShirt := nikeFactory.MakeShirt()
+
+	adidasShoe := adidasFactory.MakeShoe()
+	adidasShirt := adidasFactory.MakeShirt()
+
+	printShoeDetails(nikeShoe)
+	printShirtDetails(nikeShirt)
+
+	printShoeDetails(adidasShoe)
+	printShirtDetails(adidasShirt)
+}
+
+func printShoeDetails(s abstractFactory.IShoe) {
+	fmt.Printf("Logo: %s", s.GetLogo())
+	fmt.Println()
+	fmt.Printf("Size: %d", s.GetSize())
+	fmt.Println()
+}
+
+func printShirtDetails(s abstractFactory.IShirt) {
+	fmt.Printf("Logo: %s", s.GetLogo())
+	fmt.Println()
+	fmt.Printf("Size: %d", s.GetSize())
+	fmt.Println()
 }
